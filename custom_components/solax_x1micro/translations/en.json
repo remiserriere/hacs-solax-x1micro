@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SolaX X1-Micro Setup",
+        "description": "Enter the serial number of your SolaX Pocket WiFi module (e.g. 30M341010L0619). You can find it on the label of the WiFi dongle.",
+        "data": {
+          "serial_number": "Serial Number"
+        }
+      }
+    },
+    "error": {
+      "invalid_serial": "Invalid serial number. It must be 5–21 alphanumeric characters."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
