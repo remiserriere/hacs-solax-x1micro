@@ -2,7 +2,7 @@
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
-A Home Assistant custom integration for the **SolaX X1-Micro 2 in 1** photovoltaic inverter,
+A Home Assistant custom integration for **SolaX X1-Micro** photovoltaic inverters,
 communicating via MQTT through the SolaX Pocket WiFi dongle (ESP32-S2).
 
 Data is received directly from your local MQTT broker — no cloud dependency.
@@ -35,23 +35,43 @@ See the [official MQTT documentation](https://www.home-assistant.io/integrations
 
 ### 2. DNS redirect for the SolaX Pocket WiFi module
 
-> **TODO** — A detailed guide will be added in a future release.
+By design, the SolaX Pocket WiFi dongle communicates to `mqtt001.solaxcloud.com` with `mqtt002.solaxcloud.com` as fallback on two ports:
 
-The SolaX Pocket WiFi dongle connects to `mqtt001.solaxcloud.com:8883` (MQTTS).
-To intercept its traffic locally you need to redirect this hostname to your local broker via a
-custom DNS entry on the network the inverter is connected to.
+- **port 8883 (MQTTS)** — encrypted MQTT connection 
+- **port 2901 (plain MQTT)** — additional unencrypted connection (maybe for legacy compatibility)
 
-**Quick summary:**
-- On your local DNS server (e.g. Pi-hole, AdGuard Home, pfSense, or router custom hosts),
-  create an **A record**: `mqtt001.solaxcloud.com → <your broker IP>`
-- The dongle will then publish to your local broker instead of the SolaX cloud.
+Both hostnames resolve to the same cloud servers; redirecting them to the local broker via DNS
+intercepts traffic on both ports simultaneously.
+
+The approach used here is **DNS interception**: rather than blocking cloud traffic at the
+firewall level, we respond to the dongle's DNS queries for these hostnames with the IP address
+of our own local MQTT broker. The dongle then connects to the local broker transparently,
+without any firmware modification.
+
+> It is strongly recommended to assign a **static IP** (or a DHCP reservation) to the
+> inverter's WiFi dongle, so that DNS interception rules remain stable.
+
+Several DNS server configurations are documented in [CONFIG_DNS.md](CONFIG_DNS.md):
+
+| Option | DNS software | Notes |
+|--------|-------------|-------|
+| **1** | [Technitium DNS Server](https://technitium.com/dns/) | Split Horizon app — per-client granularity |
+| **2** | [BIND9](https://www.isc.org/bind/) | Zone override or split-horizon views with ACLs |
+| **3** | [Pi-hole](https://pi-hole.net/) | Local DNS Records via web UI, or custom dnsmasq config |
+
+Refer to [CONFIG_DNS.md](CONFIG_DNS.md) for step-by-step instructions for each option.
 
 ### 3. MQTT broker configuration
 
-> **TODO** — A detailed broker configuration guide will be added in a future release.
+The SolaX Pocket WiFi dongle uses two ports:
 
-The broker must accept plain MQTT (port 1883 or as configured) from the dongle.
-Additional TLS / authentication configuration guidance will follow.
+- **port 8883** — MQTTS (MQTT over TLS)
+- **port 2901** — plain MQTT (unencrypted)
+
+The local broker must expose a TLS listener on 8883 and a plain listener on 2901.
+
+A complete Mosquitto configuration, including TLS listener setup and self-signed certificate
+generation, is documented in [CONFIG_MQTT.md](CONFIG_MQTT.md).
 
 ---
 
@@ -73,6 +93,16 @@ Additional TLS / authentication configuration guidance will follow.
 
 ---
 
+## Supported models
+
+| Key | Display name | Tested firmware
+|-----|-------------|----------------|
+| `x1_micro_2in1` | X1-Micro 2 in 1 | Wifi: 005.03 - DSP: 005.02
+
+More models may be added in future releases.
+
+---
+
 ## Configuration
 
 After installation, add the integration via **Settings → Devices & Services → Add Integration**
@@ -82,7 +112,12 @@ You will be asked for:
 
 | Field | Description | Example |
 |-------|-------------|---------|
+| **Inverter Model** | Select your inverter model from the list | `X1-Micro 2 in 1` |
 | **Serial Number** | Serial number printed on the SolaX Pocket WiFi dongle label | `30M341010L0619` |
+
+> The serial number must be 5–21 alphanumeric characters (as printed on the WiFi dongle label).
+
+The created HA device will be named **SolaX \<model\> (\<serial\>)** (e.g. `SolaX X1-Micro 2 in 1 (30M341010L0619)`).
 
 The integration will subscribe to the following MQTT topics:
 
@@ -115,36 +150,6 @@ The integration will subscribe to the following MQTT topics:
 | Rated Power *(diagnostic)* | W | Inverter nominal rating |
 | Run Mode *(diagnostic)* | — | 1 = Normal, 0 = Standby |
 | Inverter Serial Number *(diagnostic)* | — | Serial number from binary frame |
-
----
-
-## Versioning & Releases
-
-Releases are published as [GitHub Releases](https://github.com/remiserriere/hacs-solax-x1micro/releases).
-HACS compares the `version` field in `manifest.json` against the latest GitHub Release tag to detect whether an update is available.
-
-> **Important:** Individual commits to the main branch are **not** tracked by HACS as separate versions.
-> Only explicit GitHub Releases (tagged `v*`) are visible to HACS as installable versions.
-
-### Creating a new release
-
-**Option 1 — GitHub Actions UI (no git client needed):**
-
-1. Go to **Actions → Release → Run workflow** in the repository.
-2. Enter the version number (e.g. `1.2.0`).
-3. Click **Run workflow** — the workflow will create the tag and the GitHub Release automatically.
-4. Update the `version` field in `custom_components/solax_x1micro/manifest.json` to match.
-
-**Option 2 — Tag push from the command line:**
-
-```bash
-# 1. Update the version field in custom_components/solax_x1micro/manifest.json, commit, and push.
-# 2. Then tag and push:
-git tag v1.2.0
-git push origin v1.2.0
-```
-
-Both methods trigger the release workflow and publish a GitHub Release that HACS will detect.
 
 ---
 
