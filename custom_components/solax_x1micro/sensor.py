@@ -1,8 +1,9 @@
 """Sensor platform for the SolaX X1-Micro integration."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -21,10 +22,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import CONF_INVERTER_TYPE, CONF_SERIAL_NUMBER, DOMAIN, INVERTER_TYPES
+from .const import CONF_INVERTER_TYPE, DOMAIN, INVERTER_TYPES
 from .coordinator import SolaxCoordinator
 
 

@@ -5,7 +5,6 @@ import re
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.selector import (
@@ -27,7 +26,9 @@ _SN_RE = re.compile(r"^[A-Za-z0-9]{5,21}$")
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_INVERTER_TYPE, default=INVERTER_TYPE_X1_MICRO_2IN1): SelectSelector(
+        vol.Required(
+            CONF_INVERTER_TYPE, default=INVERTER_TYPE_X1_MICRO_2IN1
+        ): SelectSelector(
             SelectSelectorConfig(
                 options=list(INVERTER_TYPES.keys()),
                 mode=SelectSelectorMode.LIST,
