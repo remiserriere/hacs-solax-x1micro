@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- Background rounded square gradient (warm sky blue → deeper blue) -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#1a6fa8"/>
+      <stop offset="100%" stop-color="#0d3d6b"/>
+    </linearGradient>
+
+    <!-- Sun core radial gradient (white-hot centre → vivid amber) -->
+    <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#fff7d6"/>
+      <stop offset="40%"  stop-color="#ffd84d"/>
+      <stop offset="100%" stop-color="#e67e00"/>
+    </radialGradient>
+
+    <!-- Solar-panel cell gradient (deep navy → electric blue) -->
+    <linearGradient id="cellGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#1b4f8a"/>
+      <stop offset="100%" stop-color="#2d7dd2"/>
+    </linearGradient>
+
+    <!-- Glow filter for the sun -->
+    <filter id="sunGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Clip path for the panel area (keeps rays behind the panel) -->
+    <clipPath id="panelClip">
+      <rect x="72" y="148" width="112" height="72" rx="6"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Background rounded square ── -->
+  <rect x="8" y="8" width="240" height="240" rx="44" ry="44"
+        fill="url(#bgGrad)"/>
+
+  <!-- ── Sun rays (8 triangular spokes, rotated 45° apart) ── -->
+  <g transform="translate(128,112)" filter="url(#sunGlow)">
+    <!-- Each ray: a thin isosceles triangle pointing outward -->
+    <g fill="#ffc72c" opacity="0.92">
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(0)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(45)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(90)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(135)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(180)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(225)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(270)"/>
+      <polygon points="0,-78  -8,-52  8,-52"  transform="rotate(315)"/>
+    </g>
+
+    <!-- Sun disc -->
+    <circle cx="0" cy="0" r="38" fill="url(#sunGrad)"/>
+
+    <!-- Subtle inner highlight -->
+    <ellipse cx="-8" cy="-10" rx="14" ry="10"
+             fill="white" opacity="0.18"/>
+  </g>
+
+  <!-- ── Solar panel (3×2 grid of cells) ── -->
+  <!-- Panel backing plate -->
+  <rect x="72" y="148" width="112" height="72" rx="6"
+        fill="#162c4a" stroke="#3a6ea8" stroke-width="2"/>
+
+  <!-- Grid lines (vertical) -->
+  <line x1="108" y1="150" x2="108" y2="218" stroke="#3a6ea8" stroke-width="1.5" opacity="0.7"/>
+  <line x1="146" y1="150" x2="146" y2="218" stroke="#3a6ea8" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Grid lines (horizontal) -->
+  <line x1="74" y1="184" x2="182" y2="184" stroke="#3a6ea8" stroke-width="1.5" opacity="0.7"/>
+
+  <!-- Individual cells with subtle fill -->
+  <!-- Row 1 -->
+  <rect x="75"  y="151" width="30" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+  <rect x="111" y="151" width="32" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+  <rect x="149" y="151" width="30" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+  <!-- Row 2 -->
+  <rect x="75"  y="186" width="30" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+  <rect x="111" y="186" width="32" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+  <rect x="149" y="186" width="30" height="30" rx="2" fill="url(#cellGrad)" opacity="0.55"/>
+
+  <!-- Cell sheen / reflection highlight -->
+  <rect x="72" y="148" width="112" height="30" rx="6"
+        fill="white" opacity="0.07"/>
+
+  <!-- ── Small lightning bolt (DC → AC, energy production) ── -->
+  <polygon points="136,96 122,122 130,122 120,145 142,115 133,115"
+           fill="white" opacity="0.90"/>
+</svg>

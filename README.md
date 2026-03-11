@@ -121,14 +121,30 @@ The integration will subscribe to the following MQTT topics:
 ## Versioning & Releases
 
 Releases are published as [GitHub Releases](https://github.com/remiserriere/hacs-solax-x1micro/releases).
-HACS will detect new versions automatically.
+HACS compares the `version` field in `manifest.json` against the latest GitHub Release tag to detect whether an update is available.
 
-To create a new release, push a version tag:
+> **Important:** Individual commits to the main branch are **not** tracked by HACS as separate versions.
+> Only explicit GitHub Releases (tagged `v*`) are visible to HACS as installable versions.
+
+### Creating a new release
+
+**Option 1 — GitHub Actions UI (no git client needed):**
+
+1. Go to **Actions → Release → Run workflow** in the repository.
+2. Enter the version number (e.g. `1.2.0`).
+3. Click **Run workflow** — the workflow will create the tag and the GitHub Release automatically.
+4. Update the `version` field in `custom_components/solax_x1micro/manifest.json` to match.
+
+**Option 2 — Tag push from the command line:**
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+# 1. Update the version field in custom_components/solax_x1micro/manifest.json, commit, and push.
+# 2. Then tag and push:
+git tag v1.2.0
+git push origin v1.2.0
 ```
+
+Both methods trigger the release workflow and publish a GitHub Release that HACS will detect.
 
 ---
 
