@@ -1,6 +1,10 @@
 # SolaX X1-Micro — Home Assistant Integration
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![HACS](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/hacs.yml/badge.svg)](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/hacs.yml)
+[![hassfest](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/hassfest.yml/badge.svg)](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/hassfest.yml)
+[![Ruff](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/ruff.yml/badge.svg)](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/ruff.yml)
+[![CodeQL](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/remiserriere/hacs-solax-x1micro/actions/workflows/github-code-scanning/codeql)
 
 A Home Assistant custom integration for **SolaX X1-Micro** photovoltaic inverters,
 communicating via MQTT through the SolaX Pocket WiFi dongle (ESP32-S2).
