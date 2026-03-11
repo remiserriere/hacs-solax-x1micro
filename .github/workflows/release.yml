@@ -30,7 +30,7 @@ jobs:
             echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create or update tag (manual trigger only)
+      - name: Create tag (manual trigger only)
         if: github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
