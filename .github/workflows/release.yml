@@ -1,45 +1,56 @@
-name: Release
+name: Release (automatic version from manifest)
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to release (e.g. 1.0.0)"
-        required: true
 
 permissions:
   contents: write
 
 jobs:
   release:
-    name: Create GitHub Release
+    name: Create GitHub Release from manifest version
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Determine tag name
-        id: tag
+    steps:
+      - name: Checkout repository (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from manifest.json
+        id: manifest
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "name=v${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          version="$(jq -r '.version' custom_components/solax_x1micro/manifest.json)"
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "Could not read .version from manifest.json"
+            exit 1
           fi
 
-      - name: Create tag (manual trigger only)
-        if: github.event_name == 'workflow_dispatch'
+          tag="v${version}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag already exists
+        id: tagcheck
+        run: |
+          if git rev-parse -q --verify "refs/tags/${{ steps.manifest.outputs.tag }}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push tag (if missing)
+        if: steps.tagcheck.outputs.exists == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ steps.tag.outputs.name }}" -m "Release ${{ steps.tag.outputs.name }}"
-          git push origin "${{ steps.tag.outputs.name }}"
 
-      - name: Create release
+          git tag -a "${{ steps.manifest.outputs.tag }}" -m "Release ${{ steps.manifest.outputs.tag }}"
+          git push origin "${{ steps.manifest.outputs.tag }}"
+
+      - name: Create GitHub Release (if missing)
+        if: steps.tagcheck.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag.outputs.name }}
+          tag_name: ${{ steps.manifest.outputs.tag }}
           generate_release_notes: true
