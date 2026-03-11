@@ -31,16 +31,13 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Check if tag already exists
-        id: tagcheck
         run: |
           if git rev-parse -q --verify "refs/tags/${{ steps.manifest.outputs.tag }}" >/dev/null; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.manifest.outputs.tag }} already exists. Aborting."
+            exit 1
           fi
 
-      - name: Create and push tag (if missing)
-        if: steps.tagcheck.outputs.exists == 'false'
+      - name: Create and push tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -48,8 +45,7 @@ jobs:
           git tag -a "${{ steps.manifest.outputs.tag }}" -m "Release ${{ steps.manifest.outputs.tag }}"
           git push origin "${{ steps.manifest.outputs.tag }}"
 
-      - name: Create GitHub Release (if missing)
-        if: steps.tagcheck.outputs.exists == 'false'
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.manifest.outputs.tag }}
