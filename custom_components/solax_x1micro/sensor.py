@@ -1,4 +1,5 @@
 """Sensor platform for the SolaX X1-Micro integration."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -195,9 +196,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up SolaX X1-Micro sensors from a config entry."""
     coordinator: SolaxCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities(
-        SolaxSensor(coordinator, description) for description in SENSORS
-    )
+    async_add_entities(SolaxSensor(coordinator, description) for description in SENSORS)
 
 
 class SolaxSensor(SensorEntity):
@@ -234,9 +233,7 @@ class SolaxSensor(SensorEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to coordinator updates."""
-        self.async_on_remove(
-            self._coordinator.async_add_listener(self._handle_update)
-        )
+        self.async_on_remove(self._coordinator.async_add_listener(self._handle_update))
 
     @callback
     def _handle_update(self) -> None:

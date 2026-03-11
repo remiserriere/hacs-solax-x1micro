@@ -1,4 +1,5 @@
 """Data coordinator for the SolaX X1-Micro integration."""
+
 from __future__ import annotations
 
 import logging
@@ -44,9 +45,7 @@ class SolaxCoordinator:
             topic_status,
             self._on_status_message,
         )
-        _LOGGER.debug(
-            "Subscribed to MQTT topics: %s, %s", topic_data, topic_status
-        )
+        _LOGGER.debug("Subscribed to MQTT topics: %s, %s", topic_data, topic_status)
 
     @callback
     def _on_data_message(self, msg: mqtt.ReceiveMessage) -> None:

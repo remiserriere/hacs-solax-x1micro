@@ -1,4 +1,5 @@
 """Binary frame decoder for SolaX Pocket WiFi MQTT data."""
+
 from __future__ import annotations
 
 import logging

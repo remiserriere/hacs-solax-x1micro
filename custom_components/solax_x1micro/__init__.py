@@ -1,4 +1,5 @@
 """The SolaX X1-Micro integration."""
+
 from __future__ import annotations
 
 import logging

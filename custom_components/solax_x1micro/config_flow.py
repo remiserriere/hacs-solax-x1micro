@@ -1,4 +1,5 @@
 """Config flow for the SolaX X1-Micro integration."""
+
 from __future__ import annotations
 
 import re
