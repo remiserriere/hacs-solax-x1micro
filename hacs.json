@@ -1,6 +1,6 @@
 {
   "name": "SolaX X1-Micro",
   "render_readme": true,
-  "homeassistant": "2023.1.0",
+  "homeassistant": "2026.3.0",
   "content_in_root": false
 }

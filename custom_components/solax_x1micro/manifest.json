@@ -1,7 +1,7 @@
 {
   "domain": "solax_x1micro",
   "name": "SolaX X1-Micro",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "documentation": "https://github.com/remiserriere/hacs-solax-x1micro",
   "issue_tracker": "https://github.com/remiserriere/hacs-solax-x1micro/issues",
   "dependencies": ["mqtt"],
