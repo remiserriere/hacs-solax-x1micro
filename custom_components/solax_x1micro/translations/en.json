@@ -1,4 +1,32 @@
 {
+  "entity": {
+    "sensor": {
+      "ac_power":       { "name": "AC Power" },
+      "grid_voltage":   { "name": "Grid Voltage" },
+      "grid_current":   { "name": "Grid Current" },
+      "grid_frequency": { "name": "Grid Frequency" },
+      "vpv1":           { "name": "PV Voltage MPPT1" },
+      "ipv1":           { "name": "PV Current MPPT1" },
+      "ppv1":           { "name": "PV Power MPPT1" },
+      "vpv2":           { "name": "PV Voltage MPPT2" },
+      "ipv2":           { "name": "PV Current MPPT2" },
+      "ppv2":           { "name": "PV Power MPPT2" },
+      "pdc_total":      { "name": "Total DC Power" },
+      "e_today":        { "name": "Energy Today" },
+      "e_total":        { "name": "Energy Total" },
+      "temperature1":   { "name": "Temperature 1" },
+      "temperature2":   { "name": "Temperature 2" },
+      "rated_power":    { "name": "Rated Power" },
+      "run_mode": {
+        "name": "Run Mode",
+        "state": {
+          "standby": "Standby",
+          "normal":  "Normal"
+        }
+      },
+      "inverter_sn":    { "name": "Inverter Serial Number" }
+    }
+  },
   "config": {
     "step": {
       "user": {

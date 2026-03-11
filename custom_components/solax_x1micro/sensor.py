@@ -39,7 +39,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── AC / Grid ────────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="ac_power",
-        name="AC Power",
+        translation_key="ac_power",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -47,7 +47,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="grid_voltage",
-        name="Grid Voltage",
+        translation_key="grid_voltage",
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -55,7 +55,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="grid_current",
-        name="Grid Current",
+        translation_key="grid_current",
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -63,7 +63,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="grid_frequency",
-        name="Grid Frequency",
+        translation_key="grid_frequency",
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -72,7 +72,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── PV MPPT1 ─────────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="vpv1",
-        name="PV Voltage MPPT1",
+        translation_key="vpv1",
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -80,7 +80,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="ipv1",
-        name="PV Current MPPT1",
+        translation_key="ipv1",
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -88,7 +88,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="ppv1",
-        name="PV Power MPPT1",
+        translation_key="ppv1",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -97,7 +97,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── PV MPPT2 ─────────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="vpv2",
-        name="PV Voltage MPPT2",
+        translation_key="vpv2",
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -105,7 +105,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="ipv2",
-        name="PV Current MPPT2",
+        translation_key="ipv2",
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -113,7 +113,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="ppv2",
-        name="PV Power MPPT2",
+        translation_key="ppv2",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -122,7 +122,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── DC Total ─────────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="pdc_total",
-        name="Total DC Power",
+        translation_key="pdc_total",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -131,7 +131,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── Energy ───────────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="e_today",
-        name="Energy Today",
+        translation_key="e_today",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -139,7 +139,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="e_total",
-        name="Energy Total",
+        translation_key="e_total",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -148,7 +148,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── Temperature ──────────────────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="temperature1",
-        name="Temperature 1",
+        translation_key="temperature1",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -156,7 +156,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="temperature2",
-        name="Temperature 2",
+        translation_key="temperature2",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -165,7 +165,7 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     # ── Inverter info (diagnostic) ────────────────────────────────────────────
     SolaxSensorEntityDescription(
         key="rated_power",
-        name="Rated Power",
+        translation_key="rated_power",
         native_unit_of_measurement=UnitOfPower.WATT,
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
@@ -174,13 +174,13 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
     ),
     SolaxSensorEntityDescription(
         key="run_mode",
-        name="Run Mode",
+        translation_key="run_mode",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda d: d.get("run_mode"),
+        value_fn=lambda d: {0: "standby", 1: "normal"}.get(d.get("run_mode")),
     ),
     SolaxSensorEntityDescription(
         key="inverter_sn",
-        name="Inverter Serial Number",
+        translation_key="inverter_sn",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.get("inverter_sn"),
     ),

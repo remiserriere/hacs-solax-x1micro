@@ -1,0 +1,55 @@
+{
+  "entity": {
+    "sensor": {
+      "ac_power":       { "name": "Puissance AC" },
+      "grid_voltage":   { "name": "Tension réseau" },
+      "grid_current":   { "name": "Courant réseau" },
+      "grid_frequency": { "name": "Fréquence réseau" },
+      "vpv1":           { "name": "Tension PV MPPT1" },
+      "ipv1":           { "name": "Courant PV MPPT1" },
+      "ppv1":           { "name": "Puissance PV MPPT1" },
+      "vpv2":           { "name": "Tension PV MPPT2" },
+      "ipv2":           { "name": "Courant PV MPPT2" },
+      "ppv2":           { "name": "Puissance PV MPPT2" },
+      "pdc_total":      { "name": "Puissance DC totale" },
+      "e_today":        { "name": "Énergie du jour" },
+      "e_total":        { "name": "Énergie totale" },
+      "temperature1":   { "name": "Température 1" },
+      "temperature2":   { "name": "Température 2" },
+      "rated_power":    { "name": "Puissance nominale" },
+      "run_mode": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "standby": "Veille",
+          "normal":  "Normal"
+        }
+      },
+      "inverter_sn":    { "name": "Numéro de série de l'onduleur" }
+    }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration de l’onduleur SolaX",
+        "description": "Sélectionnez votre modèle d’onduleur et saisissez le numéro de série de votre module WiFi SolaX Pocket (ex. 30M341010L0619). Vous pouvez le trouver sur l’étiquette du dongle WiFi.",
+        "data": {
+          "inverter_type": "Modèle d’onduleur",
+          "serial_number": "Numéro de série"
+        }
+      }
+    },
+    "error": {
+      "invalid_serial": "Numéro de série invalide. Il doit contenir 5 à 21 caractères alphanumériques."
+    },
+    "abort": {
+      "already_configured": "Cet appareil est déjà configuré."
+    }
+  },
+  "selector": {
+    "inverter_type": {
+      "options": {
+        "x1_micro_2in1": "X1-Micro 2 en 1"
+      }
+    }
+  }
+}
