@@ -24,7 +24,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import EntityCategory
 
-from .const import CONF_SERIAL_NUMBER, DOMAIN
+from .const import CONF_INVERTER_TYPE, CONF_SERIAL_NUMBER, DOMAIN, INVERTER_TYPES
 from .coordinator import SolaxCoordinator
 
 
@@ -213,12 +213,14 @@ class SolaxSensor(SensorEntity):
         self.entity_description = description
         self._coordinator = coordinator
         serial = coordinator.serial_number
+        inverter_type: str = coordinator.entry.data.get(CONF_INVERTER_TYPE, "")
+        inverter_model: str = INVERTER_TYPES.get(inverter_type, "X1-Micro 2 in 1")
         self._attr_unique_id = f"{serial}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, serial)},
-            name=f"SolaX X1-Micro ({serial})",
+            name=f"SolaX {inverter_model} ({serial})",
             manufacturer="SolaX Power",
-            model="X1-Micro 2 in 1",
+            model=inverter_model,
         )
 
     @property

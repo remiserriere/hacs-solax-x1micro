@@ -2,9 +2,10 @@
   "config": {
     "step": {
       "user": {
-        "title": "SolaX X1-Micro Setup",
-        "description": "Enter the serial number of your SolaX Pocket WiFi module (e.g. 30M341010L0619). You can find it on the label of the WiFi dongle.",
+        "title": "SolaX Inverter Setup",
+        "description": "Select your inverter model and enter the serial number of your SolaX Pocket WiFi module (e.g. 30M341010L0619). You can find it on the label of the WiFi dongle.",
         "data": {
+          "inverter_type": "Inverter Model",
           "serial_number": "Serial Number"
         }
       }
@@ -14,6 +15,13 @@
     },
     "abort": {
       "already_configured": "This device is already configured."
+    }
+  },
+  "selector": {
+    "inverter_type": {
+      "options": {
+        "x1_micro_2in1": "X1-Micro 2 in 1"
+      }
     }
   }
 }
