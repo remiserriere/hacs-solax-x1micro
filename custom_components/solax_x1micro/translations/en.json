@@ -24,7 +24,9 @@
           "normal":  "Normal"
         }
       },
-      "inverter_sn":    { "name": "Inverter Serial Number" }
+      "inverter_sn":    { "name": "Inverter Serial Number" },
+      "frames_ok":      { "name": "Valid Frames" },
+      "frames_error":   { "name": "Invalid Frames" }
     }
   },
   "config": {
