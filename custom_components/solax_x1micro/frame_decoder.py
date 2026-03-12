@@ -122,8 +122,12 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
     vpv1 = u16(15) / 10.0
     vpv2 = u16(17) / 10.0
 
-    # Detect operating mode: dual-MPPT when both PV channels have voltage
-    dual_mppt = vpv1 > 0.0 and vpv2 > 0.0
+    # Detect operating mode using the explicit mppt_mode field (offset 27,
+    # 0=single-MPPT, 2=dual-MPPT). Using a voltage heuristic instead is
+    # unreliable at dawn/dusk when both channels may carry residual voltage
+    # while the inverter is in single-MPPT mode, which would cause e_total
+    # and e_today to be read from offsets that contain invalid data.
+    dual_mppt = u16(27) == 2
 
     if dual_mppt:
         pac = u16(11)
