@@ -62,21 +62,39 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
       7   grid_voltage_V  ×0.1 V
       9   grid_current_A  ×0.1 A  (single byte)
       10  padding         always 0x00
-      11  ac_power_dual_W ×1 W    (AC power when dual-MPPT active)
+      11  ac_power_W      ×1 W    (dual-MPPT only; undefined in single-MPPT)
       13  grid_freq_Hz    ×0.01 Hz
-      15  vpv1_V          ×0.1 V  (also used for Pac in single-MPPT mode)
-      17  vpv2_V          ×0.1 V
-      19  ipv1_A          ×0.1 A
-      21  ipv2_A          ×0.1 A
-      23  ppv1_W          ×1 W
-      25  ppv2_W          ×1 W
+      15  vpv1_V / pac_W  ×0.1 V in dual-MPPT; ×1 W AC power in single-MPPT
+      17  vpv2_V          ×0.1 V  (dual-MPPT only; undefined in single-MPPT)
+      19  ipv1_A          ×0.1 A  (dual-MPPT only)
+      21  ipv2_A          ×0.1 A  (dual-MPPT only)
+      23  ppv1_W          ×1 W    (dual-MPPT only)
+      25  ppv2_W          ×1 W    (dual-MPPT only)
       27  mppt_mode       0=single-MPPT, 2=dual-MPPT
-      29  e_total_kWh     ×0.1 kWh (only in dual-MPPT mode)
+      29  e_total_kWh     ×0.1 kWh (dual-MPPT only; undefined in single-MPPT)
       31  reserved        always 0
-      33  e_today_kWh     ×0.1 kWh (only in dual-MPPT mode)
+      33  e_today_kWh     ×0.1 kWh (dual-MPPT only; undefined in single-MPPT)
       35  temperature1_C  ×1 °C
       37  temperature2_C  ×1 °C
-      39  status_flags    flags (0x01=single-MPPT, 0x03=dual-MPPT)
+      39  status_flags    0x01=single-MPPT, 0x03=dual-MPPT
+
+    Single-MPPT vs dual-MPPT on the X1-Micro 2-in-1:
+      The X1-Micro has two independent PV inputs (MPPT1 and MPPT2). When both
+      panels produce meaningful power the firmware operates in dual-MPPT mode:
+      all per-channel fields (vpv1/vpv2, ipv1/ipv2, ppv1/ppv2) and the energy
+      counters are valid at the offsets shown above.
+
+      When only one panel is active — at dawn/dusk, during heavy shading, or
+      when one input is disconnected — the firmware switches to single-MPPT
+      mode.  In this mode the frame layout around offsets 11-33 changes: the
+      per-channel fields are absent, AC power is placed at offset 15 (the same
+      location as vpv1_V in dual-MPPT mode), and the bytes at offsets 29 and
+      33 no longer contain the energy counters.
+
+      Two redundant fields in every frame indicate the current mode:
+        • mppt_mode   (offset 27): 2=dual-MPPT, 0=single-MPPT
+        • status_flags (offset 39): 0x03=dual-MPPT, 0x01=single-MPPT
+      Both must agree before per-channel data and energy counters are decoded.
     """
     if len(data) < FRAME_MIN_LENGTH:
         _LOGGER.debug(
@@ -122,12 +140,22 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
     vpv1 = u16(15) / 10.0
     vpv2 = u16(17) / 10.0
 
-    # Detect operating mode using the explicit mppt_mode field (offset 27,
-    # 0=single-MPPT, 2=dual-MPPT). Using a voltage heuristic instead is
-    # unreliable at dawn/dusk when both channels may carry residual voltage
-    # while the inverter is in single-MPPT mode, which would cause e_total
-    # and e_today to be read from offsets that contain invalid data.
-    dual_mppt = u16(27) == 2
+    # Two independent fields in the frame encode the operating mode.
+    # Require both to agree on dual-MPPT before reading the per-channel
+    # fields and energy counters, since those offsets carry different data
+    # in single-MPPT mode (most notably offset 15 doubles as AC power and
+    # offsets 29/33 are not energy counters in single-MPPT mode).
+    mppt_mode_raw = u16(27)   # 2 = dual-MPPT, 0 = single-MPPT
+    status = u16(39)           # 0x03 = dual-MPPT, 0x01 = single-MPPT
+    dual_by_mode = mppt_mode_raw == 2
+    dual_by_flags = bool(status & 0x02)
+    if dual_by_mode != dual_by_flags:
+        _LOGGER.debug(
+            "MPPT mode fields disagree: mppt_mode=0x%02X, status_flags=0x%04X",
+            mppt_mode_raw,
+            status,
+        )
+    dual_mppt = dual_by_mode and dual_by_flags
 
     if dual_mppt:
         pac = u16(11)
@@ -141,7 +169,9 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
         vpv1_out: float | None = vpv1
         vpv2_out: float | None = vpv2
     else:
-        # Single-MPPT mode: Pac is encoded at d[15-16]; per-channel fields are 0
+        # Single-MPPT mode: per-channel PV fields are absent; AC power is
+        # encoded at offset 15 (the same location as vpv1_V in dual-MPPT mode).
+        # Energy counters at offsets 29/33 are also invalid in this mode.
         pac = u16(15)
         ipv1 = None
         ipv2 = None
@@ -173,7 +203,7 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
         "e_today_kWh": e_today,
         "temperature1_C": u16(35),
         "temperature2_C": u16(37),
-        "status_flags": u16(39),
+        "status_flags": status,
         "dual_mppt": dual_mppt,
         "total_len": total_len,
     }
