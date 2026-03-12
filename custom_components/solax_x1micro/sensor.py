@@ -186,6 +186,21 @@ SENSORS: tuple[SolaxSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda d: d.get("inverter_sn"),
     ),
+    # ── Frame counters (diagnostic) ───────────────────────────────────────────
+    SolaxSensorEntityDescription(
+        key="frames_ok",
+        translation_key="frames_ok",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda d: d.get("frames_ok"),
+    ),
+    SolaxSensorEntityDescription(
+        key="frames_error",
+        translation_key="frames_error",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda d: d.get("frames_error"),
+    ),
 )
 
 

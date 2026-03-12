@@ -14,6 +14,19 @@ FRAME_MIN_LENGTH = 107
 FUNC_CODE_REALTIME = 0x1C
 
 
+def crc16_buypass(data: bytes) -> int:
+    """Compute CRC-16/BUYPASS (also known as CRC-16/VERIFONE) checksum."""
+    crc = 0x0000
+    for byte in data:
+        crc ^= byte << 8
+        for _ in range(8):
+            if crc & 0x8000:
+                crc = ((crc << 1) ^ 0x8005) & 0xFFFF
+            else:
+                crc = (crc << 1) & 0xFFFF
+    return crc
+
+
 def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
     """Decode a SolaX Cloud $$ binary frame (function code 0x1C, real-time data).
 
@@ -80,6 +93,17 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
             "Unexpected function code: 0x%02X (expected 0x%02X)",
             data[7],
             FUNC_CODE_REALTIME,
+        )
+        return None
+
+    frame_len = len(data)
+    expected_crc: int = struct.unpack_from("<H", data, frame_len - 2)[0]
+    computed_crc: int = crc16_buypass(data[: frame_len - 2])
+    if computed_crc != expected_crc:
+        _LOGGER.debug(
+            "CRC mismatch: computed 0x%04X, got 0x%04X",
+            computed_crc,
+            expected_crc,
         )
         return None
 

@@ -24,7 +24,9 @@
           "normal":  "Normal"
         }
       },
-      "inverter_sn":    { "name": "Numéro de série de l'onduleur" }
+      "inverter_sn":    { "name": "Numéro de série de l'onduleur" },
+      "frames_ok":      { "name": "Trames valides" },
+      "frames_error":   { "name": "Trames invalides" }
     }
   },
   "config": {

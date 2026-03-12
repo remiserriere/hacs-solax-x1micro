@@ -28,6 +28,8 @@ class SolaxCoordinator:
         self._listeners: list[Callable[[], None]] = []
         self._unsub_data: Callable | None = None
         self._unsub_status: Callable | None = None
+        self._frames_ok: int = 0
+        self._frames_error: int = 0
 
     async def async_setup(self) -> None:
         """Subscribe to MQTT topics."""
@@ -53,13 +55,25 @@ class SolaxCoordinator:
         payload: bytes = msg.payload
         parsed = decode_solax_frame(payload)
         if parsed is None:
+            self._frames_error += 1
             _LOGGER.warning(
                 "Received invalid or unrecognized frame on %s (len=%d)",
                 msg.topic,
                 len(payload),
             )
+            self.data = {
+                **self.data,
+                "frames_ok": self._frames_ok,
+                "frames_error": self._frames_error,
+            }
+            self._notify_listeners()
             return
-        self.data = parsed
+        self._frames_ok += 1
+        self.data = {
+            **parsed,
+            "frames_ok": self._frames_ok,
+            "frames_error": self._frames_error,
+        }
         self.online = True
         _LOGGER.debug("Decoded SolaX frame: %s", parsed)
         self._notify_listeners()
