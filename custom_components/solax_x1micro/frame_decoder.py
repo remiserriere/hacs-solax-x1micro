@@ -52,7 +52,7 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
       0x24  1  Reserved
       0x25 21  Inverter SN (ASCII, null-padded)
       0x3A 47  Data section (see below)
-      0x65  2  Checksum (LE)
+      0x69  2  Checksum (BE)
 
     Data section (offsets relative to 0x3A):
       0   rated_power_W   ×1 W
@@ -97,7 +97,7 @@ def decode_solax_frame(data: bytes) -> dict[str, Any] | None:
         return None
 
     frame_len = len(data)
-    expected_crc: int = struct.unpack_from("<H", data, frame_len - 2)[0]
+    expected_crc: int = struct.unpack_from(">H", data, frame_len - 2)[0]
     computed_crc: int = crc16_buypass(data[: frame_len - 2])
     if computed_crc != expected_crc:
         _LOGGER.debug(
