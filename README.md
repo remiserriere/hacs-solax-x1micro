@@ -11,6 +11,14 @@ communicating via MQTT through the SolaX Pocket WiFi dongle (ESP32-S2).
 
 Data is received directly from your local MQTT broker — no cloud dependency.
 
+> ⚠️ **Protocol note:** The binary frame format used by the SolaX Pocket WiFi dongle has
+> not been officially documented by SolaX.  The field mappings implemented in this
+> integration are derived from reverse engineering of a **legacy** dongle firmware
+> and cross-validated against real-world sensor values on a live installation.
+> They have **not** been verified against the current dongle firmware.
+> Decoded values should be treated as best-effort estimates; accuracy is not
+> guaranteed.  See [BOOT_FRAMES.md](BOOT_FRAMES.md) for details.
+
 ---
 
 ## Features
