@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 
 from .const import CONF_SERIAL_NUMBER, MQTT_TOPIC_DATA, MQTT_TOPIC_STATUS
-from .frame_decoder import decode_solax_frame
+from .frame_decoder import classify_boot_frame, decode_compact_frame, decode_solax_frame
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,29 +53,53 @@ class SolaxCoordinator:
     def _on_data_message(self, msg: mqtt.ReceiveMessage) -> None:
         """Handle incoming binary data frame."""
         payload: bytes = msg.payload
+
+        # Try the standard 107-byte real-time frame first.
         parsed = decode_solax_frame(payload)
+
         if parsed is None:
-            self._frames_error += 1
-            _LOGGER.warning(
-                "Received invalid or unrecognized frame on %s (len=%d)",
-                msg.topic,
-                len(payload),
-            )
+            # Try the compact 79-byte start-up frame which carries most
+            # real-time sensor values but lacks rated_power, run_mode and
+            # inverter_sn.
+            parsed = decode_compact_frame(payload)
+
+        if parsed is not None:
+            self._frames_ok += 1
             self.data = {
-                **self.data,
+                **parsed,
                 "frames_ok": self._frames_ok,
                 "frames_error": self._frames_error,
             }
+            self.online = True
+            _LOGGER.debug("Decoded SolaX frame: %s", parsed)
             self._notify_listeners()
             return
-        self._frames_ok += 1
+
+        # Check whether this is a known boot frame (minimal handshake,
+        # firmware-version response, or configuration parameter dump).
+        # These are expected during the inverter start-up sequence and should
+        # not be counted as errors.
+        boot_desc = classify_boot_frame(payload)
+        if boot_desc is not None:
+            _LOGGER.debug(
+                "Ignoring known boot frame on %s: %s",
+                msg.topic,
+                boot_desc,
+            )
+            return
+
+        # Truly unknown or malformed frame.
+        self._frames_error += 1
+        _LOGGER.warning(
+            "Received invalid or unrecognized frame on %s (len=%d)",
+            msg.topic,
+            len(payload),
+        )
         self.data = {
-            **parsed,
+            **self.data,
             "frames_ok": self._frames_ok,
             "frames_error": self._frames_error,
         }
-        self.online = True
-        _LOGGER.debug("Decoded SolaX frame: %s", parsed)
         self._notify_listeners()
 
     @callback
