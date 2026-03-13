@@ -6,6 +6,34 @@ on the `loc/tsp/<serial>` MQTT topic and share the same `$$` magic prefix, but
 differ in length, function code, and content from the standard 107-byte real-time
 data frame documented in the main source code.
 
+> ⚠️ **Disclaimer — speculative analysis**
+>
+> The frame layouts and field mappings described in this document are the result
+> of two complementary but imperfect methods:
+>
+> 1. **Reverse engineering of a legacy SolaX WiFi dongle firmware** (an older
+>    firmware version, *not* the firmware currently running on the inverter
+>    described here).  That binary was statically analysed to identify the `$$`
+>    frame format, field offsets, and the CRC algorithm.
+>
+> 2. **Cross-validation against real-world values**: the field positions inferred
+>    from the legacy firmware were verified by comparing decoded values (voltages,
+>    frequencies, energy counters, temperatures) against physically plausible
+>    values observed on a live installation.
+>
+> Neither of these methods constitutes a definitive protocol specification.  In
+> particular:
+>
+> - The boot-sequence frame types (79 B, 64 B, 46 B, 158 B) have **not** been
+>   validated against the source code or current firmware of the dongle.
+> - Field names, units, and interpretations are **best-effort guesses** and may
+>   be incorrect.
+> - **No accuracy is guaranteed** until a complete reverse-engineering of the
+>   current dongle firmware has been performed.
+>
+> Contributions, corrections, and captures from other hardware revisions are
+> very welcome.
+
 All multi-byte integers in the SolaX `$$` protocol are **little-endian** unless
 otherwise noted.  CRC values are **big-endian** and are computed with the
 CRC-16/BUYPASS algorithm (also known as CRC-16/VERIFONE, poly `0x8005`, init
