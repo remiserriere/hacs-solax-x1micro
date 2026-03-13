@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 FRAME_MAGIC = b"$$"
-FRAME_LENGTH = 107          # exact byte count for a real-time data frame
+FRAME_LENGTH = 107  # exact byte count for a real-time data frame
 FUNC_CODE_REALTIME = 0x1C
 
 
