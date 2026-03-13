@@ -274,12 +274,12 @@ bytes.
 ### Example frame
 
 ```
-24249E000801011C33304D3334313031304C3036313900000000000000
-010E7B000202190033304D3334313031304C3036313900000000000000
-E8030502035B002000800180028003800480058006800780088009800A80
-0B800C800D800E800F8010801180128013801480158016801780188019801A
-801B801C801D801E801F800000000007000000000000000000000000000000
-0000000000431F
+24249E000801011C33304D3334313031304C30363139000000000000
+00010E7B000202190033304D3334313031304C303631390000000000
+0000E8030502035B0020008001800280038004800580068007800880
+09800A800B800C800D800E800F801080118012801380148015801680
+1780188019801A801B801C801D801E801F8000000000070000000000
+00000000000000000000000000000000431F
 ```
 
 ### Layout — header and known fields
@@ -468,4 +468,240 @@ def crc16_buypass(data: bytes) -> int:
             else:
                 crc = (crc << 1) & 0xFFFF
     return crc
+```
+
+---
+
+## Interactive Frame Decoder (Python helper script)
+
+Copy the block below into a `.py` file (or run it directly with `python3`) to
+decode frames interactively.  Paste the hex of any captured frame on one line
+(spaces are ignored), press Enter, and the script prints the decoded fields.
+Press **CTRL-C** to quit.
+
+The script recognises all five frame types documented above, reports
+**`wrong crc`** for a checksum mismatch, and **`frame unknown`** for any
+length that is not in the table.
+
+> ⚠️ **Reminder:** field interpretations are speculative — see the disclaimer
+> at the top of this document.
+
+```python
+#!/usr/bin/env python3
+"""
+SolaX Pocket WiFi — interactive frame decoder.
+
+Paste a hex frame on one line (spaces are ignored), press Enter.
+Repeat for each subsequent frame.  Press CTRL-C to quit.
+
+Recognised frame types
+  107 B (0x6B)  Standard real-time frame         FC=0x1C
+   79 B (0x4F)  Compact real-time frame (boot)   FC=0x1C
+   64 B (0x40)  Minimal handshake (boot)          FC=0x1C
+   46 B (0x2E)  Firmware-version response (boot)  FC=0x0E
+  158 B (0x9E)  Configuration dump (boot)         FC=0x1C
+
+All other lengths  →  "frame unknown"
+Failed CRC         →  "wrong crc"
+"""
+
+import struct
+import sys
+
+
+# ---------------------------------------------------------------------------
+# CRC-16/BUYPASS  (poly 0x8005, init 0x0000, no reflection, no final XOR)
+# ---------------------------------------------------------------------------
+def crc16_buypass(data: bytes) -> int:
+    crc = 0
+    for b in data:
+        crc ^= b << 8
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x8005 if crc & 0x8000 else crc << 1) & 0xFFFF
+    return crc
+
+
+# ---------------------------------------------------------------------------
+# Small helpers
+# ---------------------------------------------------------------------------
+def _u16(f: bytes, off: int) -> int:
+    return struct.unpack_from("<H", f, off)[0]
+
+
+def _sn(raw: bytes) -> str:
+    return raw.rstrip(b"\x00").decode("ascii", errors="replace")
+
+
+# ---------------------------------------------------------------------------
+# Common header printer (bytes 0x00–0x24)
+# ---------------------------------------------------------------------------
+def _print_header(f: bytes) -> None:
+    print(f"  WiFi SN      : {_sn(f[0x08:0x1D])}")
+    print(f"  Sequence     : {f[0x06]}")
+    print(f"  Func code    : 0x{f[0x07]:02X}")
+    print(f"  DSP FW (raw) : {f[0x1E]}")
+    print(f"  ARM FW (raw) : {f[0x1F]}  (varies across boot frames; stable only in the 107 B frame)")
+    print(f"  HW version   : {f[0x21]}")
+    print(f"  FW version   : {f[0x22]}.{f[0x23]}")
+
+
+# ---------------------------------------------------------------------------
+# Shared real-time sensor block
+#
+# Relative offsets (all LE u16 unless noted):
+#   +0x00  grid_voltage  x0.1 V
+#   +0x02  grid_current  u8  x0.1 A   (+0x03 padding)
+#   +0x04  AC_power      W
+#   +0x06  grid_freq     x0.01 Hz
+#   +0x08  Vpv1          x0.1 V
+#   +0x0A  Vpv2          x0.1 V
+#   +0x0C  Ipv1          x0.1 A
+#   +0x0E  Ipv2          x0.1 A
+#   +0x10  Ppv1          W
+#   +0x12  Ppv2          W
+#   +0x14  MPPT_mode
+#   +0x16  E_total       x0.1 kWh
+#   +0x18  (reserved 2 B)
+#   +0x1A  E_today       x0.1 kWh
+#   +0x1C  T1            deg C
+#   +0x1E  T2            deg C
+#   +0x20  status_flags
+#   +0x22  tail (6 B, ignored)
+#
+# base = 0x25 for the 79 B compact frame (no inverter SN / preamble)
+# base = 0x41 for the 107 B standard frame (= 0x3A + 7 bytes of preamble)
+# ---------------------------------------------------------------------------
+def _print_sensor_block(f: bytes, base: int) -> None:
+    print(f"  Grid voltage  : {_u16(f, base + 0x00) / 10:.1f} V")
+    print(f"  Grid current  : {f[base + 0x02] / 10:.1f} A")
+    print(f"  AC power      : {_u16(f, base + 0x04)} W")
+    print(f"  Grid frequency: {_u16(f, base + 0x06) / 100:.2f} Hz")
+    print(f"  Vpv1          : {_u16(f, base + 0x08) / 10:.1f} V")
+    print(f"  Vpv2          : {_u16(f, base + 0x0A) / 10:.1f} V")
+    print(f"  Ipv1          : {_u16(f, base + 0x0C) / 10:.1f} A")
+    print(f"  Ipv2          : {_u16(f, base + 0x0E) / 10:.1f} A")
+    print(f"  Ppv1          : {_u16(f, base + 0x10)} W")
+    print(f"  Ppv2          : {_u16(f, base + 0x12)} W")
+    print(f"  MPPT mode     : {_u16(f, base + 0x14)}")
+    print(f"  E_total       : {_u16(f, base + 0x16) / 10:.1f} kWh")
+    print(f"  E_today       : {_u16(f, base + 0x1A) / 10:.1f} kWh")
+    print(f"  Temperature 1 : {_u16(f, base + 0x1C)} C")
+    print(f"  Temperature 2 : {_u16(f, base + 0x1E)} C")
+    print(f"  Status flags  : 0x{_u16(f, base + 0x20):04X}")
+
+
+# ---------------------------------------------------------------------------
+# Per-type decoders
+# ---------------------------------------------------------------------------
+def _decode_107(f: bytes) -> None:
+    print("  Type         : 107 B — Standard real-time frame")
+    _print_header(f)
+    print(f"  Inverter SN  : {_sn(f[0x25:0x3A])}")
+    print(f"  Rated power  : {_u16(f, 0x3A)} W")
+    print(f"  Run mode     : {f[0x3E]}")
+    _print_sensor_block(f, 0x41)
+
+
+def _decode_79(f: bytes) -> None:
+    print("  Type         : 79 B — Compact real-time frame (boot)")
+    _print_header(f)
+    print("  (no inverter SN / rated_power / run_mode in this frame type)")
+    _print_sensor_block(f, 0x25)
+
+
+def _decode_64(f: bytes) -> None:
+    print("  Type         : 64 B — Minimal handshake (boot)")
+    _print_header(f)
+    print(f"  Inverter SN  : {_sn(f[0x25:0x3A])}")
+    print(f"  Rated power  : {_u16(f, 0x3A)} W")
+    print(f"  Marker       : 0x{_u16(f, 0x3C):04X}")
+
+
+def _decode_46(f: bytes) -> None:
+    print("  Type         : 46 B — Firmware-version response (boot)")
+    _print_header(f)
+    fw_str = f[0x26:0x2C].decode("ascii", errors="replace")
+    print(f"  WiFi FW ver  : {fw_str}")
+
+
+def _decode_158(f: bytes) -> None:
+    print("  Type         : 158 B — Configuration parameter dump (boot)")
+    _print_header(f)
+    print(f"  Inverter SN  : {_sn(f[0x25:0x3A])}")
+    print(f"  Rated power  : {_u16(f, 0x3A)} W")
+    cfg = f[0x3E:]
+    print(f"  Sub-command  : 0x{cfg[0]:02X}")
+    regs = [struct.unpack_from("<H", cfg, 4 + i * 2)[0] for i in range(32)]
+    print(f"  Registers    : 0x{regs[0]:04X}–0x{regs[-1]:04X}  ({len(regs)} entries)")
+
+
+_DECODERS = {
+    107: _decode_107,
+    79:  _decode_79,
+    64:  _decode_64,
+    46:  _decode_46,
+    158: _decode_158,
+}
+
+
+# ---------------------------------------------------------------------------
+# Main decode entry-point
+# ---------------------------------------------------------------------------
+def decode_frame(raw_hex: str) -> None:
+    raw_hex = "".join(raw_hex.split())   # strip all whitespace / newlines
+    if not raw_hex:
+        return
+
+    try:
+        frame = bytes.fromhex(raw_hex)
+    except ValueError as exc:
+        print(f"  parse error: {exc}")
+        return
+
+    actual_len = len(frame)
+    if actual_len < 4:
+        print("frame unknown  (too short)")
+        return
+    if frame[0:2] != b"$$":
+        print("frame unknown  (missing $$ magic)")
+        return
+
+    reported_len = _u16(frame, 2)
+    if reported_len != actual_len:
+        print(f"frame unknown  (length field {reported_len} != actual {actual_len} bytes)")
+        return
+
+    calc_crc  = crc16_buypass(frame[:-2])
+    frame_crc = struct.unpack_from(">H", frame, actual_len - 2)[0]
+    if calc_crc != frame_crc:
+        print(f"wrong crc  (computed 0x{calc_crc:04X}, frame carries 0x{frame_crc:04X})")
+        return
+
+    decoder = _DECODERS.get(actual_len)
+    if decoder is None:
+        print(f"frame unknown  ({actual_len} B — CRC OK but length not recognised)")
+        return
+
+    print(f"  CRC OK       : 0x{frame_crc:04X}")
+    decoder(frame)
+
+
+# ---------------------------------------------------------------------------
+# Interactive loop
+# ---------------------------------------------------------------------------
+def main() -> None:
+    print("SolaX frame decoder — paste hex (spaces ignored), press Enter.")
+    print("CTRL-C to quit.\n")
+    while True:
+        try:
+            raw = input("frame> ")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        decode_frame(raw)
+        print()
+
+
+if __name__ == "__main__":
+    main()
 ```
